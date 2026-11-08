@@ -3,6 +3,7 @@
 Local Network Monitor (Assignment Part 1)
 """
 import json
+from pprint import pprint
 import pexpect
  
 # get the hostname
@@ -23,6 +24,20 @@ for line in links:
     iface["flags"] = line.get("flags")
     iface["state"] = line.get("operstate")
     interfaces.append(iface)
- 
-print("Hostname:", hostname)
-print(interfaces)
+
+outBytes = pexpect.run("ip -json address show")
+addrs = json.loads(outBytes.decode())
+
+# get ip address info 
+addresses = []
+for line in addrs:
+    for info in line.get("addr_info", []):
+        address = {}
+        address["name"] = line.get("ifname")
+        address["ip"] = info.get("local")
+        addresses.append(address)
+
+print("Hostname:", hostname, "\n")
+pprint(interfaces)
+print("\n")
+pprint(addresses)
