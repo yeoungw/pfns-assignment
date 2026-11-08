@@ -9,10 +9,20 @@ import pexpect
 # get the hostname
 outBytes = pexpect.run("hostname")
 hostname = outBytes.decode().strip()
+if hostname == "":
+    print("Error: can not get hostname") # add error handling
+    hostname = "unknown"
  
-# run the 3 ip commands
+# run ip link command
 outBytes = pexpect.run("ip -json link show")
-links = json.loads(outBytes.decode())
+outStr = outBytes.decode()
+links = []
+
+if outStr.strip().startswith("["):
+    links = json.loads(outStr)
+else:
+    print("Error running: ip -json link show")
+    print(outStr)
 
 # get ip link info
 interfaces = []
@@ -25,8 +35,15 @@ for line in links:
     iface["state"] = line.get("operstate")
     interfaces.append(iface)
 
+# run ip address command
 outBytes = pexpect.run("ip -json address show")
-addrs = json.loads(outBytes.decode())
+outStr = outBytes.decode()
+addrs = []
+if outStr.strip().startswith("["):
+    addrs = json.loads(outStr)
+else:
+    print("Error running: ip -json address show")
+    print(outStr)
 
 # get ip address info 
 addresses = []
@@ -37,8 +54,15 @@ for line in addrs:
         address["ip"] = info.get("local")
         addresses.append(address)
 
+# run ip route command
 outBytes = pexpect.run("ip -json route show")
-routeList = json.loads(outBytes.decode())
+outStr = outBytes.decode()
+routeList = []
+if outStr.strip().startswith("["):
+    routeList = json.loads(outStr)
+else:
+    print("Error running: ip -json route show")
+    print(outStr)
 
 # get ip route info 
 routes = []
@@ -46,7 +70,6 @@ for line in routeList:
     route = {}
     route["destination"] = line.get("dst")
     route["gateway"] = line.get("gateway", "none")
-    route["perfer-source"] = line.get("prefsrc")
     route["device"] = line.get("dev")
     routes.append(route)
 
