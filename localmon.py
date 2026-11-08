@@ -2,19 +2,27 @@
 """
 Local Network Monitor (Assignment Part 1)
 """
+import json
 import pexpect
-
+ 
 # get the hostname
 outBytes = pexpect.run("hostname")
 hostname = outBytes.decode().strip()
-print("Hostname:", hostname)
-
+ 
 # run the 3 ip commands
 outBytes = pexpect.run("ip -json link show")
-print(outBytes.decode())
+links = json.loads(outBytes.decode())
 
-outBytes = pexpect.run("ip -json address show")
-print(outBytes.decode())
-
-outBytes = pexpect.run("ip -json route show")
-print(outBytes.decode())
+# get ip link info
+interfaces = []
+for line in links:
+    iface = {}
+    iface["name"] = line.get("ifname")
+    iface["mtu"] = line.get("mtu")
+    iface["mac"] = line.get("address")
+    iface["flags"] = line.get("flags")
+    iface["state"] = line.get("operstate")
+    interfaces.append(iface)
+ 
+print("Hostname:", hostname)
+print(interfaces)
