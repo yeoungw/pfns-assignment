@@ -37,7 +37,22 @@ for line in addrs:
         address["ip"] = info.get("local")
         addresses.append(address)
 
+outBytes = pexpect.run("ip -json route show")
+routeList = json.loads(outBytes.decode())
+
+# get ip route info 
+routes = []
+for line in routeList:
+    route = {}
+    route["destination"] = line.get("dst")
+    route["gateway"] = line.get("gateway", "none")
+    route["perfer-source"] = line.get("prefsrc")
+    route["device"] = line.get("dev")
+    routes.append(route)
+
 print("Hostname:", hostname, "\n")
 pprint(interfaces)
 print("\n")
 pprint(addresses)
+print("\n")
+pprint(routes)
