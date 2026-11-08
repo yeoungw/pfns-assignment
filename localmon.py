@@ -69,13 +69,40 @@ routes = []
 for line in routeList:
     route = {}
     route["destination"] = line.get("dst")
-    route["gateway"] = line.get("gateway", "none")
+    route["gateway"] = line.get("gateway")
+    route["prefer-source"] = line.get("prefsrc")
     route["device"] = line.get("dev")
     routes.append(route)
 
-print("Hostname:", hostname, "\n")
-pprint(interfaces)
-print("\n")
-pprint(addresses)
-print("\n")
-pprint(routes)
+# put everything in dict
+data = {}
+data["hostname"] = hostname
+data["interfaces"] = interfaces
+data["addresses"] = addresses
+data["routes"] = routes
+
+# display using dict keys
+print("Hostname:", data["hostname"])
+
+print("\nInterfaces:")
+for iface in data["interfaces"]:
+    print("Name: ", iface["name"])
+    print("MTU:  ", iface["mtu"])
+    print("MAC:  ", iface["mac"])
+    print("State:", iface["state"])
+    print("Flags:", iface["flags"])
+    print()
+
+print("IP Addresses:")
+for address in data["addresses"]:
+    print(f"{address['name']}: {address['ip']}")
+
+print("\nRoutes:")
+for route in data["routes"]:
+    print(f"{route['destination']} via {route['gateway']} src {route['prefer-source']} dev {route['device']}")
+
+# write to json file
+f = open("local_network.json", "w")
+json.dump(data, f, indent=4)
+f.close()
+print("\nsaved to local_network.json")
